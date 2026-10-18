@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Happy Birthday!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0a1a3a;
+    --deep: #123a8c;
+    --sky: #4aa3ff;
+    --ice: #d6ebff;
+    --gold: #ffd166;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Bricolage Grotesque", system-ui, sans-serif;
+    color: var(--ice);
+    background: radial-gradient(ellipse at 50% 120%, var(--deep), var(--night) 70%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow-x: hidden;
+    padding: 24px;
+  }
+  .stars { position: fixed; inset: 0; pointer-events: none; }
+  .stars i {
+    position: absolute; width: 3px; height: 3px; border-radius: 50%;
+    background: var(--ice); opacity: .5;
+  }
+  main { position: relative; z-index: 1; max-width: 520px; width: 100%; }
+  h1 {
+    font-size: clamp(2.6rem, 11vw, 4.6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  .name { font-family: "Caveat", cursive; font-size: clamp(2rem, 9vw, 3.2rem); color: var(--sky); margin-top: 8px; }
+
+  /* cake */
+  .cake { position: relative; width: 240px; margin: 44px auto 12px; }
+  .candles { display: flex; justify-content: space-around; padding: 0 28px; height: 70px; align-items: flex-end; }
+  .candle { position: relative; width: 12px; height: 46px; background: linear-gradient(90deg, #fff, var(--ice)); border-radius: 3px; }
+  .flame {
+    position: absolute; left: 50%; top: -24px; width: 14px; height: 22px;
+    transform: translateX(-50%); transform-origin: 50% 100%;
+    background: radial-gradient(circle at 50% 70%, #fff 0 18%, var(--gold) 45%, #ff9a3c 100%);
+    border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+    animation: flicker .5s ease-in-out infinite alternate;
+    transition: opacity .3s, transform .3s;
+  }
+  .out .flame { opacity: 0; transform: translateX(-50%) scale(.2); animation: none; }
+  @keyframes flicker { to { transform: translateX(-50%) scale(1.08, .94) rotate(3deg); } }
+  .tier { height: 54px; border-radius: 10px; }
+  .t1 { width: 100%; background: linear-gradient(var(--sky), #2d7fe0); position: relative; }
+  .t1::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 16px;
+    background: radial-gradient(circle at 10px 0, #fff 10px, transparent 11px) 0 0 / 28px 16px repeat-x;
+    border-radius: 10px 10px 0 0;
+  }
+  .t2 { width: 120%; margin: -4px -10% 0; background: linear-gradient(#2d7fe0, var(--deep)); height: 62px; }
+  .plate { width: 150%; margin: 0 -25%; height: 10px; border-radius: 50%; background: var(--ice); opacity: .85; }
+
+  button {
+    font: inherit; font-weight: 500; cursor: pointer;
+    background: var(--sky); color: var(--night);
+    border: 0; border-radius: 999px; padding: 14px 28px; margin-top: 22px;
+    transition: transform .15s, background .2s;
+  }
+  button:hover { background: #7bbcff; }
+  button:active { transform: scale(.96); }
+  button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+  .music {
+    background: transparent; color: var(--ice);
+    border: 1px solid rgba(214, 235, 255, .35);
+    padding: 10px 20px; margin-top: 12px; font-size: .95rem;
+  }
+  .music:hover { background: rgba(214, 235, 255, .12); }
+
+  .note {
+    margin-top: 28px; padding: 22px 24px; border-radius: 18px;
+    background: rgba(214, 235, 255, .08); border: 1px solid rgba(214, 235, 255, .2);
+    line-height: 1.6; font-size: 1.05rem;
+    opacity: 0; transform: translateY(12px); pointer-events: none;
+    transition: opacity .6s, transform .6s;
+  }
+  .note.show { opacity: 1; transform: none; pointer-events: auto; }
+  .note b { color: var(--gold); font-weight: 500; }
+
+  canvas { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
+  @media (prefers-reduced-motion: reduce) { .flame { animation: none; } }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<canvas id="confetti"></canvas>
+
+<main>
+  <h1>Happy Birthday!</h1>
+  <p class="name" id="who">my love</p>
+
+  <div class="cake" id="cake">
+    <div class="candles">
+      <div class="candle"><div class="flame"></div></div>
+      <div class="candle"><div class="flame"></div></div>
+      <div class="candle"><div class="flame"></div></div>
+    </div>
+    <div class="tier t1"></div>
+    <div class="tier t2"></div>
+    <div class="plate"></div>
+  </div>
+
+  <button id="blow">Blow out the candles</button>
+  <br>
+  <button class="music" id="music">♪ Play The Only Exception</button>
+  <audio id="song" src="only-exception.mp3" loop></audio>
+
+  <p class="note" id="note">
+    Another year of you, and I’m still the luckiest person in the room.
+    Thank you for every laugh, every hug, and every ordinary day that feels
+    special because you’re in it. <b>I love you.</b> Make a wish. 💙
+  </p>
+</main>
+
+<script>
+  // ✏️ Change these two lines to personalize
+  const NAME = "my love";
+  const MESSAGE = null; // e.g. "Your custom message here" (leave null to keep default)
+
+  document.getElementById("who").textContent = NAME;
+  if (MESSAGE) document.getElementById("note").textContent = MESSAGE;
+
+  // twinkling stars
+  const stars = document.getElementById("stars");
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement("i");
+    s.style.left = Math.random() * 100 + "%";
+    s.style.top = Math.random() * 100 + "%";
+    s.style.opacity = (0.2 + Math.random() * 0.6).toFixed(2);
+    stars.appendChild(s);
+  }
+
+  // confetti
+  const cv = document.getElementById("confetti");
+  const ctx = cv.getContext("2d");
+  let bits = [], raf;
+  const colors = ["#4aa3ff", "#d6ebff", "#ffd166", "#7bbcff", "#ffffff", "#2d7fe0"];
+  function resize() { cv.width = innerWidth; cv.height = innerHeight; }
+  addEventListener("resize", resize); resize();
+
+  function burst() {
+    for (let i = 0; i < 140; i++) {
+      bits.push({
+        x: innerWidth / 2, y: innerHeight * 0.4,
+        vx: (Math.random() - 0.5) * 14, vy: -Math.random() * 13 - 3,
+        w: 6 + Math.random() * 6, h: 4 + Math.random() * 5,
+        r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4,
+        c: colors[(Math.random() * colors.length) | 0]
+      });
+    }
+    cancelAnimationFrame(raf); tick();
+  }
+  function tick() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    bits.forEach(b => {
+      b.vy += 0.28; b.x += b.vx; b.y += b.vy; b.r += b.vr; b.vx *= 0.99;
+      ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.r);
+      ctx.fillStyle = b.c; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); ctx.restore();
+    });
+    bits = bits.filter(b => b.y < cv.height + 20);
+    if (bits.length) raf = requestAnimationFrame(tick);
+  }
+
+  // music
+  const song = document.getElementById("song");
+  const musicBtn = document.getElementById("music");
+
+  function playSong() {
+    song.play().then(() => {
+      musicBtn.textContent = "❚❚ Pause song";
+    }).catch(() => {});
+  }
+  function pauseSong() {
+    song.pause();
+    musicBtn.textContent = "♪ Play The Only Exception";
+  }
+  musicBtn.addEventListener("click", () => {
+    song.paused ? playSong() : pauseSong();
+  });
+
+  // blow out candles
+  const cake = document.getElementById("cake");
+  const btn = document.getElementById("blow");
+  const note = document.getElementById("note");
+  btn.addEventListener("click", () => {
+    const out = cake.classList.toggle("out");
+    note.classList.toggle("show", out);
+    btn.textContent = out ? "Light them again" : "Blow out the candles";
+    if (out) {
+      burst();
+      if (song.paused) playSong();
+    }
+  });
+</script>
+</body>
+</html>
